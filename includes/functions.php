@@ -137,6 +137,19 @@ function require_role(string ...$roles): array
     return $user;
 }
 
+// Starts the session for a user who passed every login check
+function complete_login(array $user): never
+{
+    db()->prepare('UPDATE users SET last_login_at = NOW() WHERE id = ?')->execute([$user['id']]);
+
+    session_regenerate_id(true);
+    unset($_SESSION['login_attempts'], $_SESSION['login_locked_until'], $_SESSION['otp_pending']);
+    $_SESSION['user_id'] = (int) $user['id'];
+
+    flash('success', 'Welcome back, ' . $user['first_name'] . '!');
+    redirect('dashboard.php');
+}
+
 function redirect_if_logged_in(): void
 {
     if (is_logged_in()) {

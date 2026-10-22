@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/mailer.php';
 redirect_if_logged_in();
 
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -34,14 +35,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         db()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')
                             ->execute([password_hash($password, PASSWORD_DEFAULT), $user['id']]);
                     }
-                    db()->prepare('UPDATE users SET last_login_at = NOW() WHERE id = ?')->execute([$user['id']]);
+                    if (!requires_login_otp($user)) {
+                        complete_login($user);
+                    }
 
                     session_regenerate_id(true);
                     unset($_SESSION['login_attempts'], $_SESSION['login_locked_until']);
-                    $_SESSION['user_id'] = (int) $user['id'];
-
-                    flash('success', 'Welcome back, ' . $user['first_name'] . '!');
-                    redirect('dashboard.php');
+                    if (send_login_otp($user)) {
+                        redirect('verify_otp.php');
+                    }
+                    unset($_SESSION['otp_pending']);
+                    $errors[] = "We couldn't send your login code by email. Please try again later or contact the IT Department.";
                 }
             } else {
                 $_SESSION['login_attempts'] = ($_SESSION['login_attempts'] ?? 0) + 1;
