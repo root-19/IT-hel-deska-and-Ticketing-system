@@ -104,6 +104,10 @@ function current_user(): ?array
             $row = $stmt->fetch();
             if ($row && $row['status'] === 'active') {
                 $user = $row;
+                // Online status for the virtual office, written at most once a minute
+                db()->prepare('UPDATE users SET last_seen_at = NOW()
+                               WHERE id = ? AND (last_seen_at IS NULL OR last_seen_at < NOW() - INTERVAL 60 SECOND)')
+                    ->execute([$row['id']]);
             } else {
                 unset($_SESSION['user_id']);
             }

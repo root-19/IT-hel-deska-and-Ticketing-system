@@ -34,6 +34,8 @@ $awaitingConfirmation = $stmt->fetchAll();
     </div>
 </section>
 
+<?php include __DIR__ . '/../virtual_office.php'; ?>
+
 <div class="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
     <?= stat_tile('Open', $countOf(['open', 'assigned']), 'Waiting for a technician', 'text-sky-700') ?>
     <?= stat_tile('In Progress', $countOf(['in_progress', 'on_hold']), 'Being worked on', 'text-amber-600') ?>

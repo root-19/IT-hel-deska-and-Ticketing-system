@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash  VARCHAR(255) NOT NULL,
   status         ENUM('active','inactive') NOT NULL DEFAULT 'active',
   last_login_at  DATETIME NULL,
+  last_seen_at   DATETIME NULL COMMENT 'Last page view; drives online status in the virtual office',
   created_by     INT UNSIGNED NULL,
   created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
