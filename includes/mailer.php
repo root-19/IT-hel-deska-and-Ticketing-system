@@ -41,10 +41,11 @@ function send_mail(string $toEmail, string $toName, string $subject, string $htm
     }
 }
 
-// Admins sign in with their password only; every other role also needs an emailed code
+// Every role, including admins, must complete an emailed second factor.
 function requires_login_otp(array $user): bool
 {
-    return $user['role'] !== 'admin';
+    // Every role, including administrators, must complete a second factor.
+    return true;
 }
 
 // Creates a fresh code for the pending login and emails it to the user
@@ -74,7 +75,7 @@ function send_login_otp(array $user): bool
     $text = "Hi {$user['first_name']},\n\nYour " . APP_NAME . " login code is: {$code}\n\n"
         . "It expires in {$minutes} minutes. If you didn't try to log in, change your password and contact the IT Department.";
 
-    return send_mail($user['email'], $name, 'Your login code: ' . $code, $html, $text);
+    return send_mail($user['email'], $name, 'Your ICCT IT Help Desk verification code', $html, $text);
 }
 
 // Masks an email for display, e.g. ju******@icct.edu.ph

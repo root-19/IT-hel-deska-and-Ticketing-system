@@ -23,7 +23,7 @@ function temp_password(): string
 
 function valid_password(string $password): bool
 {
-    return strlen($password) >= 8 && preg_match('/[A-Z]/', $password) && preg_match('/[a-z]/', $password) && preg_match('/\d/', $password);
+    return strlen($password) >= MIN_PASSWORD_LENGTH && preg_match('/[A-Z]/', $password) && preg_match('/[a-z]/', $password) && preg_match('/\d/', $password);
 }
 
 $action = $_GET['action'] ?? 'list';
@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $generated = true;
         }
         if ($password !== '' && !valid_password($password)) {
-            $errors[] = 'Password must be at least 8 characters with uppercase, lowercase, and a number.';
+            $errors[] = 'Password must be at least ' . MIN_PASSWORD_LENGTH . ' characters with uppercase, lowercase, and a number.';
         }
 
         if (!$errors) {
@@ -273,7 +273,7 @@ $inputClass = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 te
             <div class="grid gap-5 sm:grid-cols-2">
                 <div>
                     <label for="password" class="mb-1.5 block text-sm font-medium text-slate-700"><?= $action === 'create' ? 'Password' : 'New Password' ?> <span class="font-normal text-slate-400">(optional)</span></label>
-                    <input id="password" name="password" type="text" autocomplete="new-password" class="<?= $inputClass ?>"
+                    <input id="password" name="password" type="password" autocomplete="new-password" class="<?= $inputClass ?>"
                            placeholder="<?= $action === 'create' ? 'Leave blank to auto-generate' : 'Leave blank to keep current' ?>">
                 </div>
                 <div>

@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!password_verify($current, (string) $stmt->fetchColumn())) {
             $errors[] = 'Your current password is incorrect.';
         } elseif (strlen($new) < 8 || !preg_match('/[A-Z]/', $new) || !preg_match('/[a-z]/', $new) || !preg_match('/\d/', $new)) {
-            $errors[] = 'New password must be at least 8 characters with uppercase, lowercase, and a number.';
+            $errors[] = 'New password must be at least ' . MIN_PASSWORD_LENGTH . ' characters with uppercase, lowercase, and a number.';
         } elseif ($new !== $confirm) {
             $errors[] = 'New passwords do not match.';
         } else {
@@ -100,7 +100,7 @@ $inputClass = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 te
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label for="new_password" class="mb-1.5 block text-sm font-medium text-slate-700">New password</label>
-                        <input id="new_password" name="new_password" type="password" required minlength="8" autocomplete="new-password" class="<?= $inputClass ?>">
+                    <input id="new_password" name="new_password" type="password" required minlength="<?= MIN_PASSWORD_LENGTH ?>" autocomplete="new-password" class="<?= $inputClass ?>">
                         <p class="field-error mt-1 hidden text-xs text-red-600"></p>
                     </div>
                     <div>
