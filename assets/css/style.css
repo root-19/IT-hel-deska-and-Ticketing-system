@@ -1,0 +1,150 @@
+/* Blue gradient theme */
+.bg-brand-gradient {
+    background: linear-gradient(135deg, #0b1a4f 0%, #153fdc 55%, #0ea5e9 100%);
+}
+
+.text-brand-gradient {
+    background: linear-gradient(90deg, #7dd3fc 0%, #ffffff 60%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Soft decorative blobs in gradient sections */
+.blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(70px);
+    opacity: .35;
+    pointer-events: none;
+}
+
+/* Subtle grid pattern overlay */
+.grid-pattern {
+    background-image:
+        linear-gradient(rgba(255, 255, 255, .06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .06) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+/* Fade-in on scroll (toggled by app.js) */
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity .6s ease, transform .6s ease;
+}
+
+.reveal.is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* ---------- Star rating (inputs are in reverse order: 5 -> 1) ---------- */
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+    color: #f59e0b;
+}
+
+.star-rating input:focus-visible + label {
+    outline: 2px solid #1d53f2;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* ---------- Print (reports) ---------- */
+@media print {
+    #sidebar, #sidebar-backdrop, header.sticky, #chatbot, .no-print {
+        display: none !important;
+    }
+
+    .lg\:pl-64 {
+        padding-left: 0 !important;
+    }
+
+    body {
+        background: #fff !important;
+    }
+}
+
+/* ---------- AI chat widget ---------- */
+.chat-panel {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(16px) scale(.96);
+    transform-origin: bottom right;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s;
+}
+
+.chat-panel.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    pointer-events: auto;
+    transition-delay: 0s;
+}
+
+/* Soft blue glow pulsing behind the black AI button */
+.ai-fab::before {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    z-index: -1;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #153fdc, #0ea5e9);
+    opacity: .55;
+    filter: blur(8px);
+    animation: ai-glow 2.4s ease-in-out infinite;
+}
+
+.ai-fab[aria-expanded="true"]::before {
+    animation: none;
+    opacity: .3;
+}
+
+@keyframes ai-glow {
+    0%, 100% { transform: scale(.92); opacity: .4; }
+    50% { transform: scale(1.08); opacity: .75; }
+}
+
+.chat-msg {
+    animation: chat-in .25s ease;
+}
+
+@keyframes chat-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+
+.typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: #94a3b8;
+    animation: typing 1.2s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) { animation-delay: .15s; }
+.typing-dot:nth-child(3) { animation-delay: .3s; }
+
+@keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); opacity: .5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+
+    .chat-panel,
+    .chat-msg,
+    .ai-fab::before,
+    .typing-dot {
+        animation: none;
+        transition: none;
+    }
+}
