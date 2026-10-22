@@ -1,5 +1,5 @@
 <?php
-// Virtual IT Office feed: GET -> {staff, lobby, waiting, tickets}
+// Virtual IT Office feed: GET -> {me, staff, lobby, waiting, tickets}
 // Polled by assets/js/office.js. Shows IT staff presence and where the viewer's own tickets are.
 require_once __DIR__ . '/../includes/functions.php';
 
@@ -35,7 +35,7 @@ function ago(?int $seconds): string
 
 // ---------- IT staff at their desks ----------
 $rows = db()->query(
-    "SELECT u.id, u.first_name, u.last_name, u.role, u.department,
+    "SELECT u.id, u.first_name, u.last_name, u.role,
             TIMESTAMPDIFF(SECOND, u.last_seen_at, NOW()) AS idle,
             (SELECT COUNT(*) FROM tickets t WHERE t.assigned_to = u.id AND t.status = 'in_progress') AS working,
             (SELECT COUNT(*) FROM tickets t WHERE t.assigned_to = u.id AND t.status IN ('assigned','in_progress','on_hold')) AS active
@@ -58,9 +58,8 @@ foreach ($rows as $row) {
     $staff[] = [
         'id'       => (int) $row['id'],
         'name'     => full_name($row),
-        'initials' => initials(full_name($row)),
+        'first'    => $row['first_name'],
         'role'     => $row['role'],
-        'team'     => $row['department'] ?? '',
         'presence' => $presence,
         'active'   => (int) $row['active'],
         'seen'     => ago($idle),
@@ -129,4 +128,10 @@ foreach ($rows as $row) {
     ];
 }
 
-respond(200, ['staff' => $staff, 'lobby' => $lobby, 'waiting' => $waiting, 'tickets' => $tickets]);
+respond(200, [
+    'me'      => ['role' => $user['role']],
+    'staff'   => $staff,
+    'lobby'   => $lobby,
+    'waiting' => $waiting,
+    'tickets' => $tickets,
+]);

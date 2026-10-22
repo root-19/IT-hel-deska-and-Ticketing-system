@@ -77,6 +77,52 @@ function send_login_otp(array $user): bool
     return send_mail($user['email'], $name, 'Your login code: ' . $code, $html, $text);
 }
 
+// Absolute link to a page of this site, for use in emails. Set APP_URL in .env on production.
+function app_url(string $path): string
+{
+    $base = mail_env('APP_URL');
+    if ($base === '') {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $base = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? '/'), '/\\');
+    }
+    return rtrim($base, '/') . '/' . ltrim($path, '/');
+}
+
+// Tells the requester their ticket was fixed and asks them to confirm. $ticket comes from find_ticket().
+function send_ticket_resolved_email(array $ticket, string $note, array $resolvedBy): bool
+{
+    $ticketNo = ticket_no((int) $ticket['id']);
+    $link = app_url('ticket.php?id=' . (int) $ticket['id']);
+    $by = full_name($resolvedBy);
+
+    $html = '<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#334155">'
+        . '<h2 style="color:#1834b2">' . e(APP_NAME) . '</h2>'
+        . '<p>Hi ' . e($ticket['requester_first_name']) . ',</p>'
+        . '<p>Good news! Your concern has been <strong style="color:#059669">resolved</strong>.</p>'
+        . '<table style="width:100%;border-collapse:collapse;font-size:14px;margin:16px 0">'
+        . '<tr><td style="padding:6px 0;color:#64748b;width:120px">Ticket</td><td style="padding:6px 0"><strong>' . $ticketNo . '</strong></td></tr>'
+        . '<tr><td style="padding:6px 0;color:#64748b">Subject</td><td style="padding:6px 0">' . e($ticket['subject']) . '</td></tr>'
+        . '<tr><td style="padding:6px 0;color:#64748b">Resolved by</td><td style="padding:6px 0">' . e($by) . '</td></tr>'
+        . '</table>'
+        . '<p style="margin-bottom:4px;color:#64748b;font-size:14px">What was done:</p>'
+        . '<p style="background:#f1f5f9;border-radius:8px;padding:12px;margin-top:0">' . nl2br(e($note)) . '</p>'
+        . '<p style="margin:24px 0"><a href="' . e($link) . '" style="background:#1d53f2;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:bold">Confirm the fix</a></p>'
+        . '<p style="font-size:13px">Please open the ticket to confirm and rate the support. If the problem is still there, you can reopen it from the same page.</p>'
+        . '</div>';
+    $text = "Hi {$ticket['requester_first_name']},\n\nGood news! Your concern has been resolved.\n\n"
+        . "Ticket: {$ticketNo}\nSubject: {$ticket['subject']}\nResolved by: {$by}\n\nWhat was done:\n{$note}\n\n"
+        . "Please confirm the fix and rate the support: {$link}\n"
+        . 'If the problem is still there, you can reopen the ticket from the same page.';
+
+    return send_mail(
+        $ticket['requester_email'],
+        trim($ticket['requester_first_name'] . ' ' . $ticket['requester_last_name']),
+        "Resolved: {$ticketNo} - {$ticket['subject']}",
+        $html,
+        $text
+    );
+}
+
 // Masks an email for display, e.g. ju******@icct.edu.ph
 function mask_email(string $email): string
 {

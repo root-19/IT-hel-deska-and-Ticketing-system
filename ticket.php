@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/mailer.php';
 $user = require_login();
 
 $ticketId = (int) ($_GET['id'] ?? 0);
@@ -117,6 +118,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $pdo->commit();
             $success = 'Status updated to ' . $statusLabel($newStatus) . '.';
+            if ($newStatus === 'resolved') {
+                $success .= send_ticket_resolved_email($ticket, $note, $user)
+                    ? ' The requester was notified by email.'
+                    : " The requester couldn't be emailed, but they'll see it in their notifications.";
+            }
         }
     } elseif ($action === 'priority' && $isStaff) {
         $priority = $_POST['priority'] ?? '';
