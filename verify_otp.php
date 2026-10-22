@@ -127,7 +127,7 @@ include __DIR__ . '/includes/head.php';
     </main>
 </div>
 
-<script src="assets/js/app.js"></script>
+<script src="<?= asset('assets/js/app.js') ?>"></script>
 <script>
     // Keep the code field digits-only and count down the resend cooldown
     document.getElementById('code').addEventListener('input', (event) => {

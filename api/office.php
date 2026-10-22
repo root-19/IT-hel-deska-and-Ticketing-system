@@ -8,6 +8,8 @@ header('Cache-Control: no-store');
 
 const ONLINE_SECONDS = 120; // seen this recently = at their desk
 const AWAY_SECONDS = 900;   // seen this recently = away from desk
+// These roles always show as online in the office, whether or not they have the site open
+const ALWAYS_ONLINE_ROLES = ['admin', 'technician', 'faculty', 'lab'];
 
 function respond(int $status, array $data): never
 {
@@ -48,9 +50,10 @@ $staff = [];
 $presenceOf = [];
 foreach ($rows as $row) {
     $idle = $row['idle'] === null ? null : (int) $row['idle'];
+    $alwaysOnline = in_array($row['role'], ALWAYS_ONLINE_ROLES, true);
     $presence = match (true) {
-        $idle === null || $idle > AWAY_SECONDS => 'offline',
-        $idle > ONLINE_SECONDS                 => 'away',
+        !$alwaysOnline && ($idle === null || $idle > AWAY_SECONDS) => 'offline',
+        !$alwaysOnline && $idle > ONLINE_SECONDS                   => 'away',
         $row['role'] === 'technician' && $row['working'] > 0 => 'working',
         default                                => 'available',
     };
@@ -66,14 +69,15 @@ foreach ($rows as $row) {
     ];
 }
 
-// ---------- Requesters online right now (counts only) ----------
+// ---------- Requesters in the lobby (counts only) ----------
+$alwaysOnlineIn = implode(',', array_fill(0, count(ALWAYS_ONLINE_ROLES), '?'));
 $stmt = db()->prepare(
     "SELECT role, COUNT(*) FROM users
      WHERE role IN ('student','lab','faculty') AND status = 'active'
-       AND last_seen_at >= NOW() - INTERVAL " . ONLINE_SECONDS . ' SECOND
+       AND (role IN ($alwaysOnlineIn) OR last_seen_at >= NOW() - INTERVAL " . ONLINE_SECONDS . ' SECOND)
      GROUP BY role'
 );
-$stmt->execute();
+$stmt->execute(ALWAYS_ONLINE_ROLES);
 $lobby = array_merge(['student' => 0, 'lab' => 0, 'faculty' => 0], array_map('intval', $stmt->fetchAll(PDO::FETCH_KEY_PAIR)));
 
 $waiting = (int) db()->query("SELECT COUNT(*) FROM tickets WHERE status = 'open' AND assigned_to IS NULL")->fetchColumn();

@@ -42,5 +42,5 @@ $pageTitle = isset($pageTitle) ? $pageTitle . ' | ' . APP_NAME : APP_NAME;
             },
         };
     </script>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?= asset('assets/css/style.css') ?>">
 </head>

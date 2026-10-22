@@ -63,4 +63,4 @@ $chatSuggestions = ["Wi-Fi won't connect", 'I forgot my password', 'Projector ha
     </span>
 </template>
 
-<script src="assets/js/chatbot.js"></script>
+<script src="<?= asset('assets/js/chatbot.js') ?>"></script>

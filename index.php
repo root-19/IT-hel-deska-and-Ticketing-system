@@ -327,6 +327,6 @@ include __DIR__ . '/includes/head.php';
 </footer>
 
 <?php include __DIR__ . '/includes/chatbot.php'; ?>
-<script src="assets/js/app.js"></script>
+<script src="<?= asset('assets/js/app.js') ?>"></script>
 </body>
 </html>

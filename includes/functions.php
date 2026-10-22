@@ -46,6 +46,14 @@ function e(?string $value): string
     return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+// Asset URL stamped with the file's change time, so browsers and the hosting CDN
+// fetch the new version right after a deploy instead of serving a cached one
+function asset(string $path): string
+{
+    $file = __DIR__ . '/../' . $path;
+    return e($path . (is_file($file) ? '?v=' . filemtime($file) : ''));
+}
+
 function redirect(string $path): never
 {
     header('Location: ' . $path);

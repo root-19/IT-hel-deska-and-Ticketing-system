@@ -212,6 +212,6 @@ $inputClass = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text
 </div>
 
 <?php include __DIR__ . '/includes/chatbot.php'; ?>
-<script src="assets/js/app.js"></script>
+<script src="<?= asset('assets/js/app.js') ?>"></script>
 </body>
 </html>

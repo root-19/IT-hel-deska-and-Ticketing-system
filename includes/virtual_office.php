@@ -47,4 +47,4 @@ $officeStages = ['Submitted', 'Front Desk', 'Technician', 'Done'];
         <div data-office-legend class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500"></div>
     </div>
 </section>
-<script src="assets/js/office.js" defer></script>
+<script src="<?= asset('assets/js/office.js') ?>" defer></script>
