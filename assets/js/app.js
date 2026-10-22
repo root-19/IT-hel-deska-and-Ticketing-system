@@ -71,6 +71,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ---------- Loading state on submit ----------
+    // Disables the submit button and shows a spinner so the form can't be sent twice
+    const showLoading = (form) => {
+        const button = form.querySelector('button:not([type=button])');
+        if (!button) return;
+        button.disabled = true;
+        button.classList.add('inline-flex', 'items-center', 'justify-center', 'gap-2');
+        button.innerHTML =
+            '<svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path fill="currentColor" class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg><span>Please wait…</span>';
+    };
+
+    document.querySelectorAll('form[data-loading]').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            if (!event.defaultPrevented && form.checkValidity()) showLoading(form);
+        });
+    });
+
     // ---------- Clickable table rows ----------
     document.querySelectorAll('tr[data-href]').forEach((row) => {
         row.addEventListener('click', (event) => {
@@ -188,11 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 form.querySelector('.border-red-400')?.focus();
                 return;
             }
-            // Loading state on submit
-            const button = form.querySelector('button[type=submit]');
-            button.disabled = true;
-            button.innerHTML =
-                '<svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path fill="currentColor" class="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg><span>Please wait…</span>';
+            showLoading(form);
         });
     });
 });

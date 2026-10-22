@@ -4,7 +4,8 @@ $aiSparkle = '<path d="M12 3c.6 5.4 3.6 8.4 9 9-5.4.6-8.4 3.6-9 9-.6-5.4-3.6-8.4
     . '<path opacity=".65" d="M19 2c.25 1.9 1.1 2.75 3 3-1.9.25-2.75 1.1-3 3-.25-1.9-1.1-2.75-3-3 1.9-.25 2.75-1.1 3-3z"/>';
 $chatSuggestions = ["Wi-Fi won't connect", 'I forgot my password', 'Projector has no display', 'How do I submit a ticket?'];
 ?>
-<div id="chatbot" class="fixed bottom-4 right-4 z-[60] flex flex-col items-end gap-4 sm:bottom-6 sm:right-6">
+<!-- The wrapper ignores clicks so the closed panel's empty space doesn't block the page underneath -->
+<div id="chatbot" class="pointer-events-none fixed bottom-4 right-4 z-[60] flex flex-col items-end gap-4 sm:bottom-6 sm:right-6">
 
     <!-- Chat panel -->
     <section id="chat-panel" role="dialog" aria-label="ICCT AI Assistant" aria-hidden="true"
@@ -47,7 +48,7 @@ $chatSuggestions = ["Wi-Fi won't connect", 'I forgot my password', 'Projector ha
     </section>
 
     <!-- Floating AI button -->
-    <div class="flex items-center gap-3">
+    <div class="pointer-events-auto flex items-center gap-3">
         <span id="chat-hint" class="hidden rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-lg ring-1 ring-slate-200 sm:block">Need help? <span class="text-brand-600">Ask AI</span></span>
         <button id="chat-toggle" type="button" aria-controls="chat-panel" aria-expanded="false" aria-label="Open AI assistant"
                 class="ai-fab relative flex h-14 w-14 items-center justify-center rounded-full bg-neutral-950 text-white shadow-xl shadow-black/30 ring-1 ring-white/10 transition hover:scale-105 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-300">

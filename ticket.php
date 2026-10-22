@@ -246,7 +246,7 @@ $buttonClass = 'bg-brand-gradient w-full rounded-xl px-4 py-2.5 text-sm font-sem
             </ol>
 
             <?php if (!$isClosed): ?>
-                <form method="POST" class="mt-6 border-t border-slate-100 pt-6">
+                <form method="POST" data-loading class="mt-6 border-t border-slate-100 pt-6">
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="comment">
                     <label for="body" class="mb-1.5 block text-sm font-medium text-slate-700">Add a comment</label>
@@ -291,7 +291,7 @@ $buttonClass = 'bg-brand-gradient w-full rounded-xl px-4 py-2.5 text-sm font-sem
         </section>
 
         <?php if ($isAdmin && !$isClosed): ?>
-            <form method="POST" class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <form method="POST" data-loading class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="assign">
                 <h3 class="font-semibold text-slate-900"><?= $ticket['assigned_to'] ? 'Reassign' : 'Assign' ?> IT Personnel</h3>
@@ -311,7 +311,7 @@ $buttonClass = 'bg-brand-gradient w-full rounded-xl px-4 py-2.5 text-sm font-sem
         <?php endif; ?>
 
         <?php if ($isStaff && ($isAdmin || !$isClosed)): ?>
-            <form method="POST" class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <form method="POST" data-loading class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="status">
                 <h3 class="font-semibold text-slate-900"><?= $isClosed ? 'Reopen Ticket' : 'Update Status' ?></h3>
@@ -325,7 +325,7 @@ $buttonClass = 'bg-brand-gradient w-full rounded-xl px-4 py-2.5 text-sm font-sem
             </form>
 
             <?php if (!$isClosed): ?>
-                <form method="POST" class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <form method="POST" data-loading class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="priority">
                     <h3 class="font-semibold text-slate-900">Priority</h3>
@@ -342,7 +342,7 @@ $buttonClass = 'bg-brand-gradient w-full rounded-xl px-4 py-2.5 text-sm font-sem
         <?php endif; ?>
 
         <?php if ($isRequester && $ticket['status'] === 'resolved'): ?>
-            <form method="POST" class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+            <form method="POST" data-loading class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="confirm">
                 <h3 class="font-semibold text-emerald-800">Is the problem fixed?</h3>
@@ -357,7 +357,7 @@ $buttonClass = 'bg-brand-gradient w-full rounded-xl px-4 py-2.5 text-sm font-sem
                 <button class="mt-3 w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-emerald-700">Confirm &amp; Close Ticket</button>
             </form>
 
-            <form method="POST" class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <form method="POST" data-loading class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="reopen">
                 <h3 class="font-semibold text-slate-900">Still not working?</h3>

@@ -242,6 +242,9 @@
 }
 
 .office-actor-tag {
+    max-width: 84px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     margin-bottom: 1px;
     white-space: nowrap;
     border-radius: 9999px;
@@ -298,20 +301,6 @@
     animation: chip-pulse 2s infinite ease-in-out;
 }
 
-.office-progress,
-.office-guide {
-    transition: width .8s ease, left .8s ease;
-}
-
-.office-stop {
-    transition: background-color .3s, border-color .3s;
-}
-
-.office-stop.is-reached {
-    border-color: #1d53f2;
-    background: #1d53f2;
-}
-
 .office-live-dot.bg-emerald-500 {
     animation: ai-glow 2s infinite ease-in-out;
 }
@@ -324,23 +313,25 @@
 
 .bot .bot-body,
 .bot .bot-eyes,
+.bot .bot-legs,
 .bot [class^="leg-"],
 .bot [class^="arm-"] {
     transform-box: fill-box;
     transform-origin: center top;
 }
 
-.bot-available .bot-eyes,
-.bot-guide .bot-eyes { animation: bot-blink 4s infinite; }
+.bot-available .bot-eyes { animation: bot-blink 4s infinite; }
 .bot-working .bot-antenna,
 .bot-available .bot-antenna { fill: #22c55e; }
 .bot-working .arm-l { animation: bot-type .25s infinite alternate; }
 .bot-working .arm-r { animation: bot-type .25s .12s infinite alternate; }
-.bot-guide .bot-body { animation: bot-bob 1.6s infinite ease-in-out; }
 .bot-away .bot-eyes { transform: scaleY(.2); }
 .bot-away .bot-body { animation: bot-breathe 3s infinite ease-in-out; }
 .bot-offline { filter: grayscale(1); opacity: .45; }
 .bot-offline .bot-eyes { transform: scaleY(.2); }
+
+/* Sitting on a sofa: legs bend forward over the seat cushion */
+.is-sitting .bot-legs { transform: scaleY(.35); }
 
 /* Walking: legs step, arms swing, body bounces */
 .is-walking .bot-body { animation: bot-bob .35s infinite ease-in-out; }
@@ -398,8 +389,6 @@
     .bot *,
     .office-chip,
     .office-live-dot,
-    .office-progress,
-    .office-guide,
     .office-actor,
     .office-item svg * {
         animation: none !important;
