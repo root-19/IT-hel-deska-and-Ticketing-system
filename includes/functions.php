@@ -178,11 +178,11 @@ function initials(string $name): string
     return strtoupper(mb_substr($parts[0] ?? '', 0, 1) . mb_substr(end($parts) ?: '', 0, 1));
 }
 
-// Renders the ICCT logo, or a fallback icon if assets/img/logo.png is missing
+// Renders the ICCT logo, or a fallback icon if assets/img/logo.webp is missing
 function logo(string $class = 'h-10 w-10'): string
 {
-    if (file_exists(__DIR__ . '/../assets/img/logo.png')) {
-        return '<img src="assets/img/logo.png" alt="ICCT Colleges logo" class="' . $class . ' object-contain">';
+    if (file_exists(__DIR__ . '/../assets/img/logo.webp')) {
+        return '<img src="assets/img/logo.webp" alt="ICCT Colleges logo" class="' . $class . ' object-contain" style="clip-path:circle(47% at 50% 50%);">';
     }
 
     return '<span class="' . $class . ' inline-flex items-center justify-center rounded-full bg-white text-brand-700 shadow">'

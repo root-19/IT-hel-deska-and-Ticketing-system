@@ -9,8 +9,8 @@ $pageTitle = isset($pageTitle) ? $pageTitle . ' | ' . APP_NAME : APP_NAME;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= csrf_token() ?>">
     <title><?= e($pageTitle) ?></title>
-    <?php if (file_exists(__DIR__ . '/../assets/img/logo.png')): ?>
-        <link rel="icon" type="image/png" href="assets/img/logo.png">
+    <?php if (file_exists(__DIR__ . '/../assets/img/logo.webp')): ?>
+        <link rel="icon" type="image/webp" href="assets/img/logo.webp">
     <?php endif; ?>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
