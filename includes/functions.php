@@ -2,7 +2,13 @@
 // Shared helpers: session, CSRF, escaping, flash messages, auth guards, ticket helpers
 
 if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.use_strict_mode', '1');
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
     session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => $isHttps,
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
@@ -12,6 +18,19 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/../config/db.php';
 
 define('APP_NAME', 'ICCT IT Help Desk');
+
+// Defense-in-depth browser protections. HTTPS/HSTS is enabled only when the
+// request is actually HTTPS so local XAMPP development continues to work.
+if (!headers_sent()) {
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: DENY');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+    header("Content-Security-Policy: default-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'");
+    if ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')) {
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
+}
 
 // Account types. "requester" roles submit tickets; the others work on them.
 const ROLES = [
@@ -40,6 +59,74 @@ const TICKET_PRIORITIES = [
     'high'   => ['High',   'bg-orange-100 text-orange-700'],
     'urgent' => ['Urgent', 'bg-red-100 text-red-700'],
 ];
+
+const MIN_PASSWORD_LENGTH = 12;
+const AUTH_RATE_WINDOW = 900;
+const AUTH_IP_ATTEMPT_LIMIT = 20;
+const AUTH_ACCOUNT_ATTEMPT_LIMIT = 10;
+
+function auth_rate_key(string $type, string $value): string
+{
+    // Do not store raw IP addresses or login identifiers in the database.
+    return $type . ':' . hash('sha256', strtolower(trim($value)));
+}
+
+function auth_rate_limits(string $login): array
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    return [
+        [auth_rate_key('ip', $ip), AUTH_IP_ATTEMPT_LIMIT],
+        [auth_rate_key('account', $login), AUTH_ACCOUNT_ATTEMPT_LIMIT],
+    ];
+}
+
+function auth_is_rate_limited(array $limits): bool
+{
+    $now = time();
+    $stmt = db()->prepare('SELECT attempts, window_started, locked_until FROM auth_rate_limits WHERE scope = ?');
+    foreach ($limits as [$scope]) {
+        $stmt->execute([$scope]);
+        $row = $stmt->fetch();
+        if (!$row) {
+            continue;
+        }
+        if ((int) $row['locked_until'] > $now) {
+            return true;
+        }
+        if ($now - (int) $row['window_started'] >= AUTH_RATE_WINDOW) {
+            db()->prepare('UPDATE auth_rate_limits SET attempts = 0, window_started = ?, locked_until = 0 WHERE scope = ?')
+                ->execute([$now, $scope]);
+        }
+    }
+    return false;
+}
+
+function record_auth_failure(array $limits): void
+{
+    $now = time();
+    foreach ($limits as [$scope, $limit]) {
+        $stmt = db()->prepare('SELECT attempts, window_started FROM auth_rate_limits WHERE scope = ?');
+        $stmt->execute([$scope]);
+        $row = $stmt->fetch();
+        if (!$row || $now - (int) $row['window_started'] >= AUTH_RATE_WINDOW) {
+            db()->prepare('INSERT INTO auth_rate_limits (scope, attempts, window_started, locked_until) VALUES (?, 1, ?, 0) ON DUPLICATE KEY UPDATE attempts = 1, window_started = VALUES(window_started), locked_until = 0')
+                ->execute([$scope, $now]);
+            continue;
+        }
+        $attempts = (int) $row['attempts'] + 1;
+        $lockedUntil = $attempts >= $limit ? $now + AUTH_RATE_WINDOW : 0;
+        db()->prepare('UPDATE auth_rate_limits SET attempts = ?, locked_until = ? WHERE scope = ?')
+            ->execute([$attempts, $lockedUntil, $scope]);
+    }
+}
+
+function clear_auth_rate_limits(array $limits): void
+{
+    $stmt = db()->prepare('DELETE FROM auth_rate_limits WHERE scope = ?');
+    foreach ($limits as [$scope]) {
+        $stmt->execute([$scope]);
+    }
+}
 
 function e(?string $value): string
 {
@@ -78,6 +165,11 @@ function verify_csrf(): bool
 {
     $token = $_POST['csrf_token'] ?? '';
     return is_string($token) && hash_equals(csrf_token(), $token);
+}
+
+function rotate_csrf_token(): void
+{
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
 // ---------- Flash messages ----------
@@ -155,6 +247,7 @@ function complete_login(array $user): never
     db()->prepare('UPDATE users SET last_login_at = NOW() WHERE id = ?')->execute([$user['id']]);
 
     session_regenerate_id(true);
+    rotate_csrf_token();
     unset($_SESSION['login_attempts'], $_SESSION['login_locked_until'], $_SESSION['otp_pending']);
     $_SESSION['user_id'] = (int) $user['id'];
 
@@ -190,11 +283,11 @@ function initials(string $name): string
     return strtoupper(mb_substr($parts[0] ?? '', 0, 1) . mb_substr(end($parts) ?: '', 0, 1));
 }
 
-// Renders the ICCT logo, or a fallback icon if assets/img/logo.png is missing
+// Renders the ICCT logo, or a fallback icon if assets/img/logo.webp is missing
 function logo(string $class = 'h-10 w-10'): string
 {
-    if (file_exists(__DIR__ . '/../assets/img/logo.png')) {
-        return '<img src="assets/img/logo.png" alt="ICCT Colleges logo" class="' . $class . ' object-contain">';
+    if (file_exists(__DIR__ . '/../assets/img/logo.webp')) {
+        return '<img src="assets/img/logo.webp" alt="ICCT Colleges logo" class="' . $class . ' object-contain" style="clip-path:circle(47% at 50% 50%);">';
     }
 
     return '<span class="' . $class . ' inline-flex items-center justify-center rounded-full bg-white text-brand-700 shadow">'

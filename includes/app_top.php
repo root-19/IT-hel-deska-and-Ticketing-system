@@ -86,10 +86,13 @@ include __DIR__ . '/head.php';
     </nav>
 
     <div class="border-t border-white/10 p-4">
-        <a href="logout.php" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-blue-100 transition hover:bg-white/10 hover:text-white">
+        <form method="POST" action="logout.php">
+            <?= csrf_field() ?>
+            <button type="submit" class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-blue-100 transition hover:bg-white/10 hover:text-white">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
             Log out
-        </a>
+            </button>
+        </form>
     </div>
 </aside>
 <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/50 lg:hidden"></div>
@@ -151,7 +154,10 @@ include __DIR__ . '/head.php';
             <div data-dropdown-menu class="absolute right-0 mt-2 hidden w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white py-2 shadow-xl">
                 <a href="profile.php" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">My Profile</a>
                 <a href="index.php" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Home Page</a>
-                <a href="logout.php" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">Log out</a>
+                <form method="POST" action="logout.php">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50">Log out</button>
+                </form>
             </div>
         </div>
     </header>

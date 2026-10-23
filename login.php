@@ -13,11 +13,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $login = trim($_POST['login'] ?? '');
     $password = $_POST['password'] ?? '';
     $lockedUntil = $_SESSION['login_locked_until'] ?? 0;
+    $rateLimits = auth_rate_limits($login);
 
     if (!verify_csrf()) {
         $errors[] = 'Your session has expired. Please try again.';
-    } elseif ($lockedUntil > time()) {
-        $minutes = ceil(($lockedUntil - time()) / 60);
+    } elseif ($lockedUntil > time() || auth_is_rate_limited($rateLimits)) {
+        $minutes = max(1, (int) ceil((max((int) $lockedUntil, time() + AUTH_RATE_WINDOW) - time()) / 60));
         $errors[] = "Too many failed attempts. Please try again in {$minutes} minute(s).";
     } elseif ($login === '' || $password === '') {
         $errors[] = 'Please enter your email/ID number and password.';
@@ -36,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             ->execute([password_hash($password, PASSWORD_DEFAULT), $user['id']]);
                     }
                     if (!requires_login_otp($user)) {
+                        clear_auth_rate_limits($rateLimits);
                         complete_login($user);
                     }
 
@@ -48,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $errors[] = "We couldn't send your login code by email. Please try again later or contact the IT Department.";
                 }
             } else {
+                record_auth_failure($rateLimits);
                 $_SESSION['login_attempts'] = ($_SESSION['login_attempts'] ?? 0) + 1;
                 if ($_SESSION['login_attempts'] >= MAX_LOGIN_ATTEMPTS) {
                     $_SESSION['login_locked_until'] = time() + LOCKOUT_SECONDS;

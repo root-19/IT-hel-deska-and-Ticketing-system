@@ -117,7 +117,7 @@ function offline_reply(string $question): string
         '/ticket|submit|request|report|track|status/i' =>
             "To submit or track a ticket:\n1. Register for an account using your ICCT ID number, or log in if you already have one.\n2. Go to your dashboard to create a ticket and describe the issue.\n3. You can track its status there: Open, In Progress, or Resolved.",
         '/register|sign ?up|create account/i' =>
-            "To create an account, click Register at the top of the page and fill in your name, ICCT ID number, email, and a password with at least 8 characters, including uppercase, lowercase, and a number.",
+            "To create an account, click Register at the top of the page and fill in your name, ICCT ID number, email, and a password with at least 12 characters, including uppercase, lowercase, and a number.",
         '/thank|salamat|ty\b/i' =>
             "You're welcome! If anything else comes up, just ask or submit a ticket.",
     ];
