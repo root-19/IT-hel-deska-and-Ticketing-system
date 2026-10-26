@@ -38,8 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (mb_strlen($old['department']) > 100) {
             $errors[] = 'Course must be 100 characters or less.';
         }
-        if (strlen($password) < MIN_PASSWORD_LENGTH || !preg_match('/[A-Z]/', $password) || !preg_match('/[a-z]/', $password) || !preg_match('/\d/', $password)) {
-            $errors[] = 'Password must be at least ' . MIN_PASSWORD_LENGTH . ' characters with uppercase, lowercase, and a number.';
+        if (strlen($password) < 8 || !preg_match('/[A-Z]/', $password) || !preg_match('/[a-z]/', $password) || !preg_match('/\d/', $password)) {
+            $errors[] = 'Password must be at least 8 characters with uppercase, lowercase, and a number.';
         }
         if ($password !== $passwordConfirm) {
             $errors[] = 'Passwords do not match.';
@@ -157,7 +157,7 @@ $inputClass = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text
                     <div>
                         <label for="password" class="mb-1.5 block text-sm font-medium text-slate-700">Password</label>
                         <div class="relative">
-                            <input id="password" name="password" type="password" required minlength="<?= MIN_PASSWORD_LENGTH ?>" autocomplete="new-password" placeholder="Min. <?= MIN_PASSWORD_LENGTH ?> characters" data-strength="password-strength" class="<?= $inputClass ?> pr-12">
+                            <input id="password" name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="Min. 8 characters" data-strength="password-strength" class="<?= $inputClass ?> pr-12">
                             <button type="button" data-toggle-password="password" class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-brand-600" aria-label="Show password">
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             </button>

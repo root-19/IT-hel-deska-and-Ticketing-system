@@ -101,14 +101,6 @@ CREATE TABLE IF NOT EXISTS notifications (
   CONSTRAINT fk_notifications_ticket FOREIGN KEY (ticket_id) REFERENCES tickets (id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- Hashed IP/account buckets used for server-side login throttling.
-CREATE TABLE IF NOT EXISTS auth_rate_limits (
-  scope          VARCHAR(80) PRIMARY KEY,
-  attempts       SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  window_started INT UNSIGNED NOT NULL,
-  locked_until   INT UNSIGNED NOT NULL DEFAULT 0
-) ENGINE=InnoDB;
-
 -- ------------------------------------------------------------
 --  Categories
 -- ------------------------------------------------------------
@@ -126,6 +118,20 @@ INSERT IGNORE INTO categories (slug, name, description, audience, sort_order) VA
   ('faculty_equipment','Equipment Request',             'Projector, laptop, speakers, or other equipment.',                 'faculty', 4);
 
 -- ------------------------------------------------------------
---  No default accounts are created here. Use bin/create_admin.php with a
---  separately supplied password to bootstrap the first administrator.
+--  Default accounts - CHANGE THESE PASSWORDS before real use
+--  admin@icct.edu.ph ........ Admin@123
+--  all sample accounts ...... Password@123
 -- ------------------------------------------------------------
+INSERT IGNORE INTO users (id_number, first_name, last_name, email, role, department, password_hash) VALUES
+  ('ADMIN-0001', 'System',   'Administrator', 'admin@icct.edu.ph',      'admin',      'IT Department',
+   '$2y$10$ugN0LSJvq7V9EvfE11ZPc.UKeOg4TisrefgXAwI4cXMmjMnXBkNlm'),
+  ('TECH-0001',  'Mark',     'Reyes',         'tech1@icct.edu.ph',      'technician', 'Hardware & Laboratory',
+   '$2y$10$3Qr036A3jOQoEXb7Jm2RTuIGIvp/1qnrZYS/HCHK/CjrgPiIr013G'),
+  ('TECH-0002',  'Ana',      'Santos',        'tech2@icct.edu.ph',      'technician', 'Systems & Accounts',
+   '$2y$10$3Qr036A3jOQoEXb7Jm2RTuIGIvp/1qnrZYS/HCHK/CjrgPiIr013G'),
+  ('LAB-0001',   'Computer', 'Laboratory 1',  'lab1@icct.edu.ph',       'lab',        'Computer Laboratory 1',
+   '$2y$10$3Qr036A3jOQoEXb7Jm2RTuIGIvp/1qnrZYS/HCHK/CjrgPiIr013G'),
+  ('FAC-0001',   'Maria',    'Cruz',          'faculty1@icct.edu.ph',   'faculty',    'College of Computer Studies',
+   '$2y$10$3Qr036A3jOQoEXb7Jm2RTuIGIvp/1qnrZYS/HCHK/CjrgPiIr013G'),
+  ('2024-00001', 'Juan',     'Dela Cruz',     'student1@icct.edu.ph',   'student',    'BS Information Technology',
+   '$2y$10$3Qr036A3jOQoEXb7Jm2RTuIGIvp/1qnrZYS/HCHK/CjrgPiIr013G');

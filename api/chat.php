@@ -3,13 +3,6 @@
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/ai.php';
 
-if (CHAT_REQUIRE_LOGIN && !is_logged_in()) {
-    http_response_code(401);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['error' => 'Please log in before using the assistant.']);
-    exit;
-}
-
 header('Content-Type: application/json; charset=utf-8');
 
 function respond(int $status, array $data): never
@@ -21,10 +14,6 @@ function respond(int $status, array $data): never
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     respond(405, ['error' => 'Method not allowed.']);
-}
-
-if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 100_000) {
-    respond(413, ['error' => 'Request is too large.']);
 }
 
 if (!hash_equals(csrf_token(), $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
@@ -41,9 +30,6 @@ $hits[] = $now;
 $_SESSION['chat_hits'] = array_values($hits);
 
 $input = json_decode(file_get_contents('php://input'), true);
-if (!is_array($input) || json_last_error() !== JSON_ERROR_NONE) {
-    respond(400, ['error' => 'Invalid JSON request.']);
-}
 $messages = sanitize_chat_history($input['messages'] ?? null);
 if (!$messages) {
     respond(422, ['error' => 'Please type a message.']);

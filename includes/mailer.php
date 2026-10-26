@@ -41,11 +41,10 @@ function send_mail(string $toEmail, string $toName, string $subject, string $htm
     }
 }
 
-// Every role, including admins, must complete an emailed second factor.
+// Admins sign in with their password only; every other role also needs an emailed code
 function requires_login_otp(array $user): bool
 {
-    // Every role, including administrators, must complete a second factor.
-    return true;
+    return $user['role'] !== 'admin';
 }
 
 // Creates a fresh code for the pending login and emails it to the user
@@ -75,7 +74,7 @@ function send_login_otp(array $user): bool
     $text = "Hi {$user['first_name']},\n\nYour " . APP_NAME . " login code is: {$code}\n\n"
         . "It expires in {$minutes} minutes. If you didn't try to log in, change your password and contact the IT Department.";
 
-    return send_mail($user['email'], $name, 'Your ICCT IT Help Desk verification code', $html, $text);
+    return send_mail($user['email'], $name, 'Your login code: ' . $code, $html, $text);
 }
 
 // Absolute link to a page of this site, for use in emails. Set APP_URL in .env on production.
