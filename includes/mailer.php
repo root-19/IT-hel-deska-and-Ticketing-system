@@ -47,10 +47,15 @@ function requires_login_otp(array $user): bool
     return $user['role'] !== 'admin';
 }
 
+function otp_code(): string
+{
+    return str_pad((string) random_int(0, 10 ** OTP_LENGTH - 1), OTP_LENGTH, '0', STR_PAD_LEFT);
+}
+
 // Creates a fresh code for the pending login and emails it to the user
 function send_login_otp(array $user): bool
 {
-    $code = str_pad((string) random_int(0, 10 ** OTP_LENGTH - 1), OTP_LENGTH, '0', STR_PAD_LEFT);
+    $code = otp_code();
 
     $_SESSION['otp_pending'] = [
         'user_id'  => (int) $user['id'],
@@ -75,6 +80,35 @@ function send_login_otp(array $user): bool
         . "It expires in {$minutes} minutes. If you didn't try to log in, change your password and contact the IT Department.";
 
     return send_mail($user['email'], $name, 'Your login code: ' . $code, $html, $text);
+}
+
+// Emails a code that lets the user set a new password from reset_password.php
+function send_password_reset_otp(array $user): bool
+{
+    $code = otp_code();
+
+    $_SESSION['reset_pending'] = [
+        'user_id'  => (int) $user['id'],
+        'hash'     => password_hash($code, PASSWORD_DEFAULT),
+        'expires'  => time() + OTP_TTL,
+        'attempts' => 0,
+        'sent_at'  => time(),
+    ];
+
+    $minutes = (int) ceil(OTP_TTL / 60);
+
+    $html = '<div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;color:#334155">'
+        . '<h2 style="color:#1834b2">' . e(APP_NAME) . '</h2>'
+        . '<p>Hi ' . e($user['first_name']) . ',</p>'
+        . '<p>We received a request to reset your password. Use this code to set a new one:</p>'
+        . '<p style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#0f172a">' . $code . '</p>'
+        . '<p>The code expires in ' . $minutes . ' minutes. If you didn\'t ask to reset your password, you can ignore this email; your password stays the same.</p>'
+        . '<p style="font-size:12px;color:#94a3b8">Never share this code with anyone, including IT staff.</p>'
+        . '</div>';
+    $text = "Hi {$user['first_name']},\n\nYour " . APP_NAME . " password reset code is: {$code}\n\n"
+        . "It expires in {$minutes} minutes. If you didn't ask to reset your password, you can ignore this email.";
+
+    return send_mail($user['email'], full_name($user), 'Your password reset code: ' . $code, $html, $text);
 }
 
 // Absolute link to a page of this site, for use in emails. Set APP_URL in .env on production.

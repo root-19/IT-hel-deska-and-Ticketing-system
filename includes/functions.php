@@ -162,6 +162,12 @@ function complete_login(array $user): never
     redirect('dashboard.php');
 }
 
+// Password rule shared by every form that sets a password
+function valid_password(string $password): bool
+{
+    return strlen($password) >= 8 && preg_match('/[A-Z]/', $password) && preg_match('/[a-z]/', $password) && preg_match('/\d/', $password);
+}
+
 function redirect_if_logged_in(): void
 {
     if (is_logged_in()) {

@@ -21,11 +21,6 @@ function temp_password(): string
     return 'Icct' . $password . random_int(10, 99);
 }
 
-function valid_password(string $password): bool
-{
-    return strlen($password) >= 8 && preg_match('/[A-Z]/', $password) && preg_match('/[a-z]/', $password) && preg_match('/\d/', $password);
-}
-
 $action = $_GET['action'] ?? 'list';
 $editId = (int) ($_GET['id'] ?? 0);
 $errors = [];

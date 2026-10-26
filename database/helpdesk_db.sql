@@ -3,6 +3,7 @@
 --  Database schema (MySQL / MariaDB) - fresh install
 --  Import via phpMyAdmin or:  mysql -u root < helpdesk_db.sql
 --  Upgrading an existing install? Run migrations/002_roles_and_tickets.sql instead.
+--  Then run migrations/004_knowledge_base.sql to add the AI assistant's knowledge base.
 -- ============================================================
 
 CREATE DATABASE IF NOT EXISTS helpdesk_db

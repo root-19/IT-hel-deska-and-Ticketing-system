@@ -126,8 +126,8 @@ include __DIR__ . '/includes/head.php';
                     <p class="field-error mt-1 hidden text-xs text-red-600"></p>
                 </div>
 
-                <div class="flex items-center justify-between text-sm">
-                    <span class="text-slate-500">Forgot password? Contact the IT office.</span>
+                <div class="flex items-center justify-end text-sm">
+                    <a href="forgot_password.php" class="font-semibold text-brand-600 hover:text-brand-800">Forgot password?</a>
                 </div>
 
                 <button type="submit" class="bg-brand-gradient flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold text-white shadow-lg shadow-brand-200 transition hover:opacity-95 hover:shadow-xl disabled:opacity-70">

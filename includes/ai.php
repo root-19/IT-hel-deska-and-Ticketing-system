@@ -2,6 +2,7 @@
 // AI assistant helpers: history validation, Claude API call, offline answers
 
 require_once __DIR__ . '/../config/ai.php';
+require_once __DIR__ . '/knowledge.php';
 
 const AI_SYSTEM_PROMPT = <<<PROMPT
 You are the ICCT AI Assistant, the virtual IT help desk agent for ICCT Colleges in the Philippines. You help students, faculty, and staff with IT issues: Wi-Fi and network, school portal and email accounts, passwords, printers, projectors and classroom AV, computers and laptops, and software.
@@ -9,7 +10,8 @@ You are the ICCT AI Assistant, the virtual IT help desk agent for ICCT Colleges 
 How to respond:
 - Keep answers short and practical: a one-line read of the problem, then up to 5 numbered steps to try.
 - Write plain text only. No markdown: no asterisks, headings, or tables.
-- Reply in the user's language. If they write in Filipino or Taglish, answer in Taglish.
+- Reply in the user's language. If they write in Tagalog, Filipino, or Taglish, answer in natural Taglish; if they write in English, answer in English.
+- When ICCT knowledge base articles are provided below, base your answer on them first: they are the official ICCT procedures. Translate them to the user's language as needed, and only add general IT knowledge where the articles don't cover the problem.
 - If the steps don't fix it, or it needs hands-on work, access changes, or hardware repair, tell them to submit a ticket from their dashboard on this site.
 - Accounts: students register themselves on this site. Computer Laboratory, Faculty & Staff, and IT Technician accounts are created by the IT Admin, so direct those users to the IT Department.
 - IT Technicians and IT Admins may ask for troubleshooting help on behalf of others; give them technical depth.
@@ -65,6 +67,13 @@ function ask_claude(array $messages): string
         ? "The user is logged in as {$user['first_name']} (account type: " . role_label($user['role']) . ', portal: ' . ROLES[$user['role']]['portal'] . ').'
         : 'The user is not logged in yet.');
 
+    // Search the knowledge base with the user's latest messages, so short follow-ups keep their context
+    $userMessages = array_column(array_filter($messages, fn ($m) => $m['role'] === 'user'), 'content');
+    $articles = kb_search(implode("\n", array_slice($userMessages, -2)));
+    $system .= $articles
+        ? "\n\nICCT knowledge base articles that match this conversation:\n\n" . kb_context($articles)
+        : "\n\nNo ICCT knowledge base article matched this conversation; use general IT troubleshooting knowledge.";
+
     $client = new \Anthropic\Client(apiKey: ANTHROPIC_API_KEY);
     $message = $client->beta->messages->create(
         maxTokens: 4000,
@@ -96,9 +105,15 @@ function ask_claude(array $messages): string
     return $text;
 }
 
-// Keyword-based answers used when no API key is set or the AI is unreachable
+// Answers used when no API key is set or the AI is unreachable:
+// the best knowledge base article first, then built-in keyword answers
 function offline_reply(string $question): string
 {
+    $fromKnowledgeBase = kb_offline_reply($question);
+    if ($fromKnowledgeBase !== null) {
+        return $fromKnowledgeBase;
+    }
+
     $answers = [
         '/\b(hi|hello|hey|good (morning|afternoon|evening)|kumusta|musta)\b/i' =>
             "Hello! I'm the ICCT IT Assistant. Tell me what's wrong, for example Wi-Fi, accounts, printers, projectors, or software, and I'll walk you through it.",
@@ -126,6 +141,10 @@ function offline_reply(string $question): string
         if (preg_match($pattern, $question)) {
             return $answer;
         }
+    }
+
+    if (looks_tagalog($question)) {
+        return 'Matutulungan kita sa Wi-Fi at internet, account at password, printer, projector at audio, email, at software. Puwede mo bang ikuwento nang mas detalyado ang problema? Kung urgent, mag-submit ng ticket sa iyong dashboard.';
     }
 
     return "I can help with Wi-Fi and network, accounts and passwords, printers, classroom AV, email, and software issues. Could you describe the problem in a bit more detail? For anything urgent, please submit a ticket from your dashboard.";

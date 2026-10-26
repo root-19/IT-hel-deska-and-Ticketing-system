@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const STORAGE_KEY = 'icct-chat-history';
     const MAX_HISTORY = 12;
-    const WELCOME = "Hi! I'm the ICCT AI Assistant. Tell me what's wrong, whether it's Wi-Fi, your account, a printer, or software, and I'll help you troubleshoot or file a ticket.";
+    const WELCOME = "Hi! I'm the ICCT AI Assistant. Tell me what's wrong, whether it's Wi-Fi, your account, a printer, or software, and I'll help you troubleshoot or file a ticket. You can write in English or Tagalog.";
 
     let history = loadHistory();
     let busy = false;
