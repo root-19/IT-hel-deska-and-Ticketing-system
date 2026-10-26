@@ -187,8 +187,9 @@ $inputClass = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 te
 
     <section class="mt-4 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[700px] text-left text-sm">
-                <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <!-- Below md each row stacks into a card, so the actions stay on screen -->
+            <table class="block w-full text-left text-sm md:table md:min-w-[700px]">
+                <thead class="hidden border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500 md:table-header-group">
                     <tr>
                         <th class="px-5 py-3 font-semibold">Article</th>
                         <?php if ($search !== ''): ?><th class="px-5 py-3 text-right font-semibold">Match</th><?php endif; ?>
@@ -197,22 +198,22 @@ $inputClass = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 te
                         <th class="px-5 py-3 text-right font-semibold">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody class="block divide-y divide-slate-100 md:table-row-group">
                     <?php foreach ($articles as $row): ?>
-                        <tr class="<?= $row['is_active'] ? '' : 'bg-slate-50 text-slate-400' ?>">
-                            <td class="px-5 py-3">
+                        <tr class="block py-2 md:table-row md:py-0 <?= $row['is_active'] ? '' : 'bg-slate-50 text-slate-400' ?>">
+                            <td class="block px-4 py-1 md:table-cell md:px-5 md:py-3">
                                 <span class="block font-medium <?= $row['is_active'] ? 'text-slate-900' : '' ?>"><?= e($row['title']) ?></span>
                                 <span class="line-clamp-1 text-xs text-slate-400"><?= e($row['keywords']) ?></span>
                             </td>
-                            <?php if ($search !== ''): ?><td class="px-5 py-3 text-right tabular-nums"><?= (int) $row['score'] ?></td><?php endif; ?>
-                            <td class="whitespace-nowrap px-5 py-3"><?= $row['content_tl'] ? 'English, Tagalog' : 'English' ?></td>
-                            <td class="px-5 py-3">
+                            <?php if ($search !== ''): ?><td class="block px-4 py-1 tabular-nums md:table-cell md:px-5 md:py-3 md:text-right"><span class="text-xs text-slate-400 md:hidden">Match score: </span><?= (int) $row['score'] ?></td><?php endif; ?>
+                            <td class="block whitespace-nowrap px-4 py-1 md:table-cell md:px-5 md:py-3"><?= $row['content_tl'] ? 'English, Tagalog' : 'English' ?></td>
+                            <td class="block px-4 py-1 md:table-cell md:px-5 md:py-3">
                                 <span class="inline-flex items-center gap-1.5 text-xs font-medium <?= $row['is_active'] ? 'text-emerald-700' : 'text-slate-500' ?>">
                                     <span class="h-2 w-2 rounded-full <?= $row['is_active'] ? 'bg-emerald-500' : 'bg-slate-400' ?>"></span><?= $row['is_active'] ? 'Active' : 'Hidden' ?>
                                 </span>
                             </td>
-                            <td class="px-5 py-3">
-                                <div class="flex justify-end gap-1">
+                            <td class="block px-2 py-1 md:table-cell md:px-5 md:py-3">
+                                <div class="flex flex-wrap gap-1 md:flex-nowrap md:justify-end">
                                     <a href="knowledge.php?action=edit&id=<?= (int) $row['id'] ?>" class="rounded-lg px-2.5 py-1.5 text-xs font-medium text-brand-700 hover:bg-brand-50">Edit</a>
                                     <form method="POST">
                                         <?= csrf_field() ?>
@@ -231,7 +232,7 @@ $inputClass = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 te
                         </tr>
                     <?php endforeach; ?>
                     <?php if (!$articles && !$tableMissing): ?>
-                        <tr><td colspan="5" class="px-5 py-10 text-center text-slate-400"><?= $search !== '' ? 'No article matches that question. The AI will answer from general IT knowledge.' : 'No articles yet.' ?></td></tr>
+                        <tr class="block md:table-row"><td colspan="5" class="block px-5 py-10 text-center text-slate-400 md:table-cell"><?= $search !== '' ? 'No article matches that question. The AI will answer from general IT knowledge.' : 'No articles yet.' ?></td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>

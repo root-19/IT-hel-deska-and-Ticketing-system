@@ -154,15 +154,15 @@ include __DIR__ . '/includes/app_top.php';
         <p class="text-slate-500">Tickets submitted <?= e($rangeLabel) ?></p>
     </div>
     <div class="no-print flex flex-wrap items-end gap-3">
-        <nav class="flex gap-1 rounded-xl bg-white p-1 shadow-sm ring-1 ring-slate-200">
+        <nav class="flex max-w-full gap-1 overflow-x-auto rounded-xl bg-white p-1 shadow-sm ring-1 ring-slate-200">
             <?php foreach ($presets as $key => [$label]): ?>
                 <a href="reports.php?preset=<?= $key ?>" class="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium <?= $preset === $key ? 'bg-brand-600 text-white shadow' : 'text-slate-600 hover:bg-slate-100' ?>"><?= $label ?></a>
             <?php endforeach; ?>
         </nav>
-        <form method="GET" class="flex items-end gap-2">
-            <label class="text-xs text-slate-500">From<input type="date" name="from" value="<?= e($from) ?>" class="mt-1 block rounded-xl border border-slate-300 px-3 py-2 text-sm"></label>
-            <label class="text-xs text-slate-500">To<input type="date" name="to" value="<?= e($to) ?>" class="mt-1 block rounded-xl border border-slate-300 px-3 py-2 text-sm"></label>
-            <button class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">Apply</button>
+        <form method="GET" class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-end">
+            <label class="min-w-0 text-xs text-slate-500">From<input type="date" name="from" value="<?= e($from) ?>" class="mt-1 block w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"></label>
+            <label class="min-w-0 text-xs text-slate-500">To<input type="date" name="to" value="<?= e($to) ?>" class="mt-1 block w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"></label>
+            <button class="col-span-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">Apply</button>
         </form>
         <a href="<?= e($exportUrl) ?>" class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Export CSV</a>
         <button type="button" onclick="window.print()" class="bg-brand-gradient rounded-xl px-4 py-2 text-sm font-semibold text-white shadow">Print</button>

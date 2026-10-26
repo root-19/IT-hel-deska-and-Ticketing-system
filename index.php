@@ -60,7 +60,7 @@ include __DIR__ . '/includes/head.php';
     <div class="blob -left-24 top-20 h-72 w-72 bg-sky-400"></div>
     <div class="blob -right-20 bottom-0 h-96 w-96 bg-indigo-500"></div>
 
-    <div class="relative mx-auto grid max-w-7xl items-center gap-14 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+    <div class="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
         <div>
             <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-medium text-sky-100 backdrop-blur">
                 <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></span>
@@ -263,7 +263,7 @@ include __DIR__ . '/includes/head.php';
                 ['Who can use the IT Help Desk?', 'Students can register here using their ICCT ID number. Computer Laboratory and Faculty & Staff accounts are created by the IT Admin. Contact the IT Department to get one.'],
                 ['How long before my ticket is answered?', 'Most tickets receive a first response within an hour during office hours. Urgent issues are prioritized.'],
                 ['Can I track the status of my request?', 'Yes. After logging in, your dashboard shows every ticket you submitted and its current status.'],
-                ['I forgot my password. What should I do?', 'Visit the IT office or contact the help desk so a technician can verify your identity and reset your account.'],
+                ['I forgot my password. What should I do?', 'Click "Forgot password?" on the Log in page and enter your account\'s email. We\'ll email you a code so you can set a new password. If you can no longer open that email, visit the IT office with your school ID.'],
             ];
             foreach ($faqs as [$q, $a]): ?>
                 <details class="reveal group rounded-2xl border border-slate-200 bg-slate-50 p-6 open:bg-white open:shadow-lg">

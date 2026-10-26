@@ -83,7 +83,7 @@ $pageTitle = match ($user['role']) {
 $activeNav = $isAdmin && $filters['view'] === 'unassigned' ? 'unassigned' : 'tickets';
 include __DIR__ . '/includes/app_top.php';
 
-$selectClass = 'rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-100';
+$selectClass = 'w-full min-w-0 sm:w-auto rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-100';
 ?>
 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <nav class="flex gap-1 overflow-x-auto rounded-xl bg-white p-1 shadow-sm ring-1 ring-slate-200">
@@ -100,9 +100,9 @@ $selectClass = 'rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm 
     <?php endif; ?>
 </div>
 
-<form method="GET" action="tickets.php" class="mt-4 flex flex-wrap gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+<form method="GET" action="tickets.php" class="mt-4 grid grid-cols-2 gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:flex sm:flex-wrap">
     <input type="hidden" name="view" value="<?= e($filters['view']) ?>">
-    <div class="relative min-w-[200px] flex-1">
+    <div class="relative col-span-2 sm:min-w-[200px] sm:flex-1">
         <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         <input type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Search subject, ticket no., or name"
                class="w-full rounded-xl border border-slate-300 py-2.5 pl-9 pr-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-100">
@@ -133,9 +133,9 @@ $selectClass = 'rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm 
             <option value="<?= (int) $category['id'] ?>" <?= $filters['category'] === (int) $category['id'] ? 'selected' : '' ?>><?= e($category['name']) ?></option>
         <?php endforeach; ?>
     </select>
-    <button class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700">Filter</button>
+    <button class="col-span-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700">Filter</button>
     <?php if ($filters['q'] !== '' || $filters['status'] || $filters['priority'] || $filters['area'] || $filters['category']): ?>
-        <a href="tickets.php?view=<?= e($filters['view']) ?>" class="self-center text-sm text-slate-500 hover:text-brand-700">Clear</a>
+        <a href="tickets.php?view=<?= e($filters['view']) ?>" class="col-span-2 self-center text-center text-sm text-slate-500 hover:text-brand-700">Clear</a>
     <?php endif; ?>
 </form>
 

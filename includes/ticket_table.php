@@ -14,7 +14,35 @@ $showAssignee = $viewerRole !== 'technician';
         <p class="mt-1 text-sm text-slate-500"><?= e($emptyMessage ?? 'Nothing to show yet.') ?></p>
     </div>
 <?php else: ?>
-    <div class="overflow-x-auto">
+    <!-- Phones: one card per ticket, so status and priority are visible without scrolling sideways -->
+    <ul class="divide-y divide-slate-100 md:hidden">
+        <?php foreach ($ticketRows as $row): ?>
+            <li>
+                <a href="ticket.php?id=<?= (int) $row['id'] ?>" class="block px-4 py-4 transition hover:bg-brand-50/40">
+                    <span class="flex items-start justify-between gap-3">
+                        <span class="min-w-0">
+                            <span class="block truncate font-semibold text-slate-900"><?= e($row['subject']) ?></span>
+                            <span class="block text-xs text-slate-400"><?= ticket_no((int) $row['id']) ?> · <?= e($row['category_name']) ?></span>
+                        </span>
+                        <span class="shrink-0 text-xs text-slate-400"><?= time_ago($row['updated_at']) ?></span>
+                    </span>
+                    <span class="mt-2 flex flex-wrap items-center gap-2">
+                        <?= status_badge($row['status']) ?>
+                        <?= priority_badge($row['priority']) ?>
+                    </span>
+                    <?php if ($showRequester || $showAssignee): ?>
+                        <span class="mt-2 block text-xs text-slate-500">
+                            <?php if ($showRequester): ?>By <?= e(full_name($row, 'requester_')) ?> (<?= e(role_label($row['requester_role'])) ?>)<?php endif; ?>
+                            <?php if ($showRequester && $showAssignee): ?> · <?php endif; ?>
+                            <?php if ($showAssignee): ?><?= $row['assigned_to'] ? 'Assigned to ' . e(full_name($row, 'assignee_')) : '<span class="italic text-slate-400">Unassigned</span>' ?><?php endif; ?>
+                        </span>
+                    <?php endif; ?>
+                </a>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+
+    <div class="hidden overflow-x-auto md:block">
         <table class="w-full min-w-[720px] text-left text-sm">
             <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                 <tr>
