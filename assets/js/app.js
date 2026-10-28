@@ -154,6 +154,41 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ---------- Image attachments: preview and size/count checks ----------
+    document.querySelectorAll('[data-image-input]').forEach((input) => {
+        const preview = input.parentElement.querySelector('[data-image-preview]');
+        const maxFiles = Number(input.dataset.maxFiles);
+        const maxBytes = Number(input.dataset.maxBytes);
+        let urls = [];
+
+        input.addEventListener('change', () => {
+            urls.forEach((url) => URL.revokeObjectURL(url));
+            urls = [];
+            preview.innerHTML = '';
+
+            const files = Array.from(input.files);
+            let message = '';
+            if (files.length > maxFiles) {
+                message = `You can attach up to ${maxFiles} images.`;
+            } else {
+                const tooBig = files.find((file) => file.size > maxBytes);
+                if (tooBig) message = `"${tooBig.name}" is larger than ${maxBytes / 1024 / 1024} MB.`;
+            }
+            input.setCustomValidity(message);
+            showError(input, message);
+
+            files.slice(0, maxFiles).forEach((file) => {
+                const url = URL.createObjectURL(file);
+                urls.push(url);
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = file.name;
+                img.className = 'aspect-[4/3] w-full rounded-xl object-cover ring-1 ring-slate-200';
+                preview.appendChild(img);
+            });
+        });
+    });
+
     // ---------- Client-side form validation ----------
     const showError = (field, message) => {
         const wrapper = field.closest('div:has(> .field-error)') || field.closest('div');
@@ -169,6 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let message = '';
         if (field.type === 'checkbox') {
             if (field.required && !field.checked) message = 'Please check this box to continue.';
+        } else if (field.type === 'file') {
+            message = field.validationMessage;
         } else if (field.required && !field.value.trim()) {
             message = 'This field is required.';
         } else if (field.type === 'email' && field.value && !field.validity.valid) {

@@ -1,0 +1,2 @@
+# Uploaded files are served only through attachment.php, which checks ticket access
+Require all denied

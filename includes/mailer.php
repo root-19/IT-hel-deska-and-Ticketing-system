@@ -41,10 +41,10 @@ function send_mail(string $toEmail, string $toName, string $subject, string $htm
     }
 }
 
-// Only students need an emailed code; staff roles sign in with their password only
+// Students and faculty also need an emailed code; lab, technician, and admin sign in with their password only
 function requires_login_otp(array $user): bool
 {
-    return $user['role'] === 'student';
+    return in_array($user['role'], ['student', 'faculty'], true);
 }
 
 function otp_code(): string

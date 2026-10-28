@@ -181,6 +181,7 @@ $stmt = db()->prepare(
 );
 $stmt->execute([$ticketId]);
 $activity = $stmt->fetchAll();
+$attachments = ticket_attachments($ticketId);
 
 $pageTitle = ticket_no($ticketId);
 $activeNav = 'tickets';
@@ -205,6 +206,20 @@ $buttonClass = 'bg-brand-gradient w-full rounded-xl px-4 py-2.5 text-sm font-sem
                 <?= e($ticket['category_name']) ?> · <?= e(ROLES[$ticket['audience']]['portal']) ?> · submitted <?= time_ago($ticket['created_at']) ?>
             </p>
             <div class="mt-5 whitespace-pre-line break-words rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700"><?= e($ticket['description']) ?></div>
+
+            <?php if ($attachments): ?>
+                <h3 class="mt-5 text-sm font-medium text-slate-700">Attached images <span class="font-normal text-slate-400">(<?= count($attachments) ?>)</span></h3>
+                <div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    <?php foreach ($attachments as $attachment): ?>
+                        <a href="attachment.php?id=<?= (int) $attachment['id'] ?>" target="_blank" rel="noopener"
+                           class="group block overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 transition hover:ring-brand-400" title="<?= e($attachment['original_name']) ?>">
+                            <img src="attachment.php?id=<?= (int) $attachment['id'] ?>" alt="<?= e($attachment['original_name']) ?>" loading="lazy"
+                                 class="aspect-[4/3] w-full object-cover transition group-hover:opacity-90">
+                            <span class="block truncate px-3 py-2 text-xs text-slate-500"><?= e($attachment['original_name']) ?></span>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </article>
 
         <!-- Timeline -->

@@ -4,6 +4,7 @@ $user = require_role('student', 'lab', 'faculty');
 
 $categories = categories_for($user['role']);
 $categoryIds = array_map('intval', array_column($categories, 'id'));
+$canAttach = can_attach_images($user);
 
 $errors = [];
 $old = [
@@ -20,7 +21,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $old[$key] = trim($_POST[$key] ?? '');
     }
 
-    if (!verify_csrf()) {
+    // PHP drops the whole form when the upload exceeds post_max_size
+    if (!$_POST && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+        $errors[] = 'The images are too large to upload. Please choose smaller files.';
+    } elseif (!verify_csrf()) {
         $errors[] = 'Your session has expired. Please try again.';
     }
     if (!in_array($old['category_id'], $categoryIds, true)) {
@@ -42,6 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Please choose a priority.';
     }
 
+    [$images, $imageErrors] = $canAttach ? uploaded_images('images') : [[], []];
+    $errors = array_merge($errors, $imageErrors);
+    if ($errors && $images) {
+        $errors[] = 'Please attach your images again.';
+    }
+
     if (!$errors) {
         $pdo = db();
         $pdo->beginTransaction();
@@ -56,12 +66,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $old['priority'],
         ]);
         $ticketId = (int) $pdo->lastInsertId();
-        log_activity($ticketId, $user['id'], 'created', 'Submitted the ticket.');
+        $imageCount = count($images);
+        log_activity($ticketId, $user['id'], 'created', 'Submitted the ticket' . ($imageCount ? " with $imageCount image" . ($imageCount > 1 ? 's' : '') : '') . '.');
         notify(admin_ids(), $ticketId, 'New ticket ' . ticket_no($ticketId) . ' from ' . full_name($user) . ': ' . $old['subject']);
-        $pdo->commit();
 
-        flash('success', 'Ticket ' . ticket_no($ticketId) . ' submitted! The IT team will assign a technician soon.');
-        redirect('ticket.php?id=' . $ticketId);
+        try {
+            store_ticket_images($ticketId, (int) $user['id'], $images);
+            $pdo->commit();
+        } catch (Throwable $e) {
+            $pdo->rollBack();
+            error_log('Ticket image upload failed: ' . $e->getMessage());
+            $errors[] = "We couldn't save your images, so the ticket wasn't submitted. Please try again.";
+        }
+
+        if (!$errors) {
+            flash('success', 'Ticket ' . ticket_no($ticketId) . ' submitted! The IT team will assign a technician soon.');
+            redirect('ticket.php?id=' . $ticketId);
+        }
     }
 }
 
@@ -84,7 +105,7 @@ $inputClass = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text
         </div>
     <?php endif; ?>
 
-    <form method="POST" action="ticket_create.php" class="mt-6 space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8" data-validate novalidate>
+    <form method="POST" action="ticket_create.php" enctype="multipart/form-data" class="mt-6 space-y-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8" data-validate novalidate>
         <?= csrf_field() ?>
 
         <fieldset>
@@ -121,6 +142,18 @@ $inputClass = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text
                       class="<?= $inputClass ?>"><?= e($old['description']) ?></textarea>
             <p class="field-error mt-1 hidden text-xs text-red-600"></p>
         </div>
+
+        <?php if ($canAttach): ?>
+            <div>
+                <label for="images" class="mb-1.5 block text-sm font-medium text-slate-700">Screenshots or photos <span class="font-normal text-slate-400">(optional)</span></label>
+                <input id="images" name="images[]" type="file" multiple accept="<?= implode(',', array_keys(ATTACHMENT_TYPES)) ?>"
+                       data-image-input data-max-files="<?= ATTACHMENT_MAX_FILES ?>" data-max-bytes="<?= ATTACHMENT_MAX_BYTES ?>"
+                       class="block w-full cursor-pointer rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3 text-sm text-slate-600 transition hover:border-brand-300 file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100">
+                <p class="mt-1 text-xs text-slate-400">Up to <?= ATTACHMENT_MAX_FILES ?> images, <?= ATTACHMENT_MAX_BYTES / 1024 / 1024 ?> MB each (JPG, PNG, GIF, or WEBP). A screenshot of the error helps the technician a lot.</p>
+                <div data-image-preview class="mt-3 grid grid-cols-3 gap-3 empty:hidden"></div>
+                <p class="field-error mt-1 hidden text-xs text-red-600"></p>
+            </div>
+        <?php endif; ?>
 
         <div class="grid gap-6 sm:grid-cols-2">
             <div>

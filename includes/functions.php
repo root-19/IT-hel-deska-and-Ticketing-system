@@ -362,3 +362,100 @@ function location_label(string $role): string
         default   => 'Location (optional)',
     };
 }
+
+// ---------- Attachments ----------
+// Account types that may attach images when submitting a ticket
+const ATTACHMENT_ROLES = ['student', 'faculty'];
+const ATTACHMENT_MAX_FILES = 3;
+const ATTACHMENT_MAX_BYTES = 5 * 1024 * 1024;
+const ATTACHMENT_TYPES = [
+    'image/jpeg' => 'jpg',
+    'image/png'  => 'png',
+    'image/gif'  => 'gif',
+    'image/webp' => 'webp',
+];
+// uploads/.htaccess blocks direct requests; files are served through attachment.php after an access check
+define('ATTACHMENT_DIR', __DIR__ . '/../uploads/tickets');
+
+function can_attach_images(array $user): bool
+{
+    return in_array($user['role'], ATTACHMENT_ROLES, true);
+}
+
+// Checks the images posted under $_FILES[$field] (a multiple file input).
+// Returns [images, errors]; each image is ['tmp_name', 'name', 'mime', 'size'].
+function uploaded_images(string $field): array
+{
+    $files = $_FILES[$field] ?? null;
+    if (!$files || !is_array($files['name'])) {
+        return [[], []];
+    }
+
+    $images = [];
+    $errors = [];
+    $count = 0;
+    foreach ($files['name'] as $i => $name) {
+        $error = $files['error'][$i];
+        if ($error === UPLOAD_ERR_NO_FILE) {
+            continue;
+        }
+        $count++;
+        $name = mb_substr(basename((string) $name), 0, 255);
+        $tmp = $files['tmp_name'][$i];
+
+        if (in_array($error, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true) || $files['size'][$i] > ATTACHMENT_MAX_BYTES) {
+            $errors[] = "\"$name\" is larger than " . (ATTACHMENT_MAX_BYTES / 1024 / 1024) . ' MB.';
+        } elseif ($error !== UPLOAD_ERR_OK || !is_uploaded_file($tmp)) {
+            $errors[] = "\"$name\" could not be uploaded. Please try again.";
+        } else {
+            // Trust the file's actual contents, not its extension or the browser's claimed type
+            $info = @getimagesize($tmp);
+            $mime = $info['mime'] ?? '';
+            if (!isset(ATTACHMENT_TYPES[$mime])) {
+                $errors[] = "\"$name\" is not a JPG, PNG, GIF, or WEBP image.";
+            } else {
+                $images[] = ['tmp_name' => $tmp, 'name' => $name, 'mime' => $mime, 'size' => (int) $files['size'][$i]];
+            }
+        }
+    }
+
+    if ($count > ATTACHMENT_MAX_FILES) {
+        $errors[] = 'You can attach up to ' . ATTACHMENT_MAX_FILES . ' images.';
+    }
+    return [$images, $errors];
+}
+
+// Moves validated uploads into ATTACHMENT_DIR and records them. Call inside the
+// ticket's transaction; on failure the saved files are removed and the error rethrown.
+function store_ticket_images(int $ticketId, int $userId, array $images): void
+{
+    if (!is_dir(ATTACHMENT_DIR) && !mkdir(ATTACHMENT_DIR, 0755, true)) {
+        throw new RuntimeException('The upload folder could not be created.');
+    }
+
+    $stmt = db()->prepare(
+        'INSERT INTO ticket_attachments (ticket_id, user_id, stored_name, original_name, mime_type, size_bytes) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    $saved = [];
+    try {
+        foreach ($images as $image) {
+            $storedName = bin2hex(random_bytes(16)) . '.' . ATTACHMENT_TYPES[$image['mime']];
+            $path = ATTACHMENT_DIR . '/' . $storedName;
+            if (!move_uploaded_file($image['tmp_name'], $path)) {
+                throw new RuntimeException("\"{$image['name']}\" could not be saved.");
+            }
+            $saved[] = $path;
+            $stmt->execute([$ticketId, $userId, $storedName, $image['name'], $image['mime'], $image['size']]);
+        }
+    } catch (Throwable $e) {
+        array_map('unlink', $saved);
+        throw $e;
+    }
+}
+
+function ticket_attachments(int $ticketId): array
+{
+    $stmt = db()->prepare('SELECT id, original_name, size_bytes FROM ticket_attachments WHERE ticket_id = ? ORDER BY id');
+    $stmt->execute([$ticketId]);
+    return $stmt->fetchAll();
+}
